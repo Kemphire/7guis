@@ -6,11 +6,15 @@ class MyTextFieldWidget extends StatelessWidget {
     required this.controller,
     required this.nameOfField,
     required this.portionWidth,
+    required this.onchanged,
+    required this.onEditingComplete,
   });
 
   final TextEditingController controller;
   final String nameOfField;
   final double portionWidth;
+  final void Function(String) onchanged;
+  final void Function() onEditingComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +27,8 @@ class MyTextFieldWidget extends StatelessWidget {
             controller,
             nameOfField,
             portionWidth,
+            onchanged,
+            onEditingComplete,
           );
         },
       ),
@@ -35,6 +41,8 @@ SizedBox getMyTextField(
   TextEditingController controller,
   String nameOfField,
   double portionWidth,
+  void Function(String) onChanged,
+  void Function() onEditingComplete,
 ) {
   return SizedBox(
     width: constraint.maxWidth / portionWidth,
@@ -45,7 +53,8 @@ SizedBox getMyTextField(
           child: TextField(
             controller: controller,
             decoration: InputDecoration(border: OutlineInputBorder()),
-            onChanged: (String value) {},
+            onChanged: onChanged,
+            onEditingComplete: onEditingComplete,
           ),
         ),
       ],
