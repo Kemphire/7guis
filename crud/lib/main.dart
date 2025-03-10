@@ -35,9 +35,11 @@ class _CrudState extends State<Crud> {
 
   int? selectedIndex;
 
-  List<String> postToBeDisplayed() {
+  List<MapEntry<int, String>> postToBeDisplayed() {
     if (prefixController.text.isEmpty) {
-      return _posts.map((element) => element.join(", ")).toList();
+      return List.generate(_posts.length, (i) {
+        return MapEntry(i, _posts[i].join(", "));
+      });
     }
     return topFiveMatchingNames(_posts, prefixController.text);
   }
@@ -90,15 +92,28 @@ class _CrudState extends State<Crud> {
                                 shrinkWrap: true,
                                 itemBuilder: (context, index) {
                                   return Square(
-                                    child: postToBeDisplayedList[index],
+                                    child: postToBeDisplayedList[index].value,
                                     selected: selectedIndex == index,
                                     onTap: () {
                                       setState(() {
-                                        if (selectedIndex == index) {
+                                        if (selectedIndex ==
+                                            postToBeDisplayedList[index].key) {
                                           selectedIndex = null;
+                                          nameController.text = "";
+                                          surnameController.text = "";
                                           return;
                                         }
-                                        selectedIndex = index;
+                                        selectedIndex =
+                                            postToBeDisplayedList[index].key;
+                                        // var name = postToBeDisplayedList[index]
+                                        //     .value
+                                        //     .split(", ");
+                                        // nameController.text = name[0];
+                                        // surnameController.text = name[1];
+                                        nameController.text =
+                                            _posts[selectedIndex!][0];
+                                        surnameController.text =
+                                            _posts[selectedIndex!][1];
                                       });
                                     },
                                   );
@@ -133,12 +148,66 @@ class _CrudState extends State<Crud> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Expanded(
-                            child: getMyButton("Create", onPressed: () {}),
+                            child: getMyButton(
+                              "Create",
+                              onPressed: () {
+                                if (nameController.text.isEmpty ||
+                                    surnameController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Please enter both Name and surname",
+                                        style: TextStyle(
+                                          color: Colors.redAccent,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 40,
+                                        ),
+                                      ),
+                                      duration: Duration(seconds: 3),
+                                      showCloseIcon: true,
+                                    ),
+                                  );
+                                } else {
+                                  setState(() {
+                                    _posts.add([
+                                      nameController.text,
+                                      surnameController.text,
+                                    ]);
+                                    nameController.text = "";
+                                    surnameController.text = "";
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "A entry appended succesfully",
+                                        style: TextStyle(
+                                          color: Colors.greenAccent,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 40,
+                                        ),
+                                      ),
+                                      duration: Duration(seconds: 2),
+                                      showCloseIcon: true,
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
                           ),
                           Expanded(
                             child: getMyButton(
                               "Update",
-                              onPressed: selectedIndex == null ? null : () {},
+                              onPressed:
+                                  selectedIndex == null
+                                      ? null
+                                      : () {
+                                        setState(() {
+                                          _posts[selectedIndex!][0] =
+                                              nameController.text;
+                                          _posts[selectedIndex!][1] =
+                                              surnameController.text;
+                                        });
+                                      },
                             ),
                           ),
                           Expanded(
