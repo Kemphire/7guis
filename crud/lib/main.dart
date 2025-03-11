@@ -49,189 +49,170 @@ class _CrudState extends State<Crud> {
     var postToBeDisplayedList = postToBeDisplayed();
     return Scaffold(
       appBar: AppBar(),
-
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
         },
-        child: LayoutBuilder(
-          builder: (context, constraint) {
-            return SizedBox(
-              height: constraint.maxHeight,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      MyTextFieldWidget(
-                        controller: prefixController,
-                        nameOfField: "Prefix: ",
-                        portionWidth: 2,
-                        onchanged: (String value) {
-                          setState(() {}); // Just triggers rebuild
-                        },
-                        onEditingComplete: () {},
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MyTextFieldWidget(
+                controller: prefixController,
+                nameOfField: "Prefix: ",
+                portionWidth: 2,
+                onchanged: (String value) {
+                  setState(() {});
+                },
+                onEditingComplete: () {},
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: MediaQuery.of(context).size.width / 2,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 2),
+                        borderRadius: BorderRadius.circular(5),
                       ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: constraint.maxWidth / 2,
-                            height: (constraint.maxHeight * 2) / 3,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.black,
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: ListView.builder(
-                                itemCount: postToBeDisplayedList.length,
-                                shrinkWrap: true,
-                                itemBuilder: (context, index) {
-                                  return Square(
-                                    child: postToBeDisplayedList[index].value,
-                                    selected: selectedIndex == index,
-                                    onTap: () {
-                                      setState(() {
-                                        if (selectedIndex ==
-                                            postToBeDisplayedList[index].key) {
-                                          selectedIndex = null;
-                                          nameController.text = "";
-                                          surnameController.text = "";
-                                          return;
-                                        }
-                                        selectedIndex =
-                                            postToBeDisplayedList[index].key;
-                                        // var name = postToBeDisplayedList[index]
-                                        //     .value
-                                        //     .split(", ");
-                                        // nameController.text = name[0];
-                                        // surnameController.text = name[1];
-                                        nameController.text =
-                                            _posts[selectedIndex!][0];
-                                        surnameController.text =
-                                            _posts[selectedIndex!][1];
-                                      });
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                MyTextFieldWidget(
-                                  controller: nameController,
-                                  nameOfField: "Name: ",
-                                  portionWidth: 1,
-                                  onchanged: (String value) {},
-                                  onEditingComplete: () {},
-                                ),
-                                MyTextFieldWidget(
-                                  controller: surnameController,
-                                  nameOfField: "Surname: ",
-                                  portionWidth: 1,
-                                  onchanged: (String value) {},
-                                  onEditingComplete: () {},
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded(
-                            child: getMyButton(
-                              "Create",
-                              onPressed: () {
-                                if (nameController.text.isEmpty ||
-                                    surnameController.text.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Please enter both Name and surname",
-                                        style: TextStyle(
-                                          color: Colors.redAccent,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 40,
-                                        ),
-                                      ),
-                                      duration: Duration(seconds: 3),
-                                      showCloseIcon: true,
-                                    ),
-                                  );
-                                } else {
-                                  setState(() {
-                                    _posts.add([
-                                      nameController.text,
-                                      surnameController.text,
-                                    ]);
-                                    nameController.text = "";
-                                    surnameController.text = "";
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "A entry appended succesfully",
-                                        style: TextStyle(
-                                          color: Colors.greenAccent,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 40,
-                                        ),
-                                      ),
-                                      duration: Duration(seconds: 2),
-                                      showCloseIcon: true,
-                                    ),
-                                  );
+                      child: ListView.builder(
+                        itemCount: postToBeDisplayedList.length,
+                        itemBuilder: (context, index) {
+                          return Square(
+                            child: postToBeDisplayedList[index].value,
+                            selected:
+                                selectedIndex ==
+                                postToBeDisplayedList[index].key,
+                            onTap: () {
+                              setState(() {
+                                if (selectedIndex ==
+                                    postToBeDisplayedList[index].key) {
+                                  selectedIndex = null;
+                                  nameController.text = "";
+                                  surnameController.text = "";
+                                  return;
                                 }
-                              },
-                            ),
+                                selectedIndex =
+                                    postToBeDisplayedList[index].key;
+                                nameController.text = _posts[selectedIndex!][0];
+                                surnameController.text =
+                                    _posts[selectedIndex!][1];
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    // Right side: Text fields for Name and Surname
+                    Expanded(
+                      child: Column(
+                        children: [
+                          MyTextFieldWidget(
+                            controller: nameController,
+                            nameOfField: "Name: ",
+                            portionWidth: 1,
+                            onchanged: (String value) {},
+                            onEditingComplete: () {},
                           ),
-                          Expanded(
-                            child: getMyButton(
-                              "Update",
-                              onPressed:
-                                  selectedIndex == null
-                                      ? null
-                                      : () {
-                                        setState(() {
-                                          _posts[selectedIndex!][0] =
-                                              nameController.text;
-                                          _posts[selectedIndex!][1] =
-                                              surnameController.text;
-                                        });
-                                      },
-                            ),
-                          ),
-                          Expanded(
-                            child: getMyButton(
-                              "Delete",
-                              onPressed:
-                                  selectedIndex == null
-                                      ? null
-                                      : () {
-                                        setState(() {
-                                          _posts.removeAt(selectedIndex!);
-                                          selectedIndex = null;
-                                        });
-                                      },
-                            ),
+                          MyTextFieldWidget(
+                            controller: surnameController,
+                            nameOfField: "Surname: ",
+                            portionWidth: 1,
+                            onchanged: (String value) {},
+                            onEditingComplete: () {},
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
+              // Bottom: Button row
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: getMyButton(
+                      "Create",
+                      onPressed: () {
+                        if (nameController.text.isEmpty ||
+                            surnameController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Please enter both Name and surname",
+                                style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 40,
+                                ),
+                              ),
+                              duration: Duration(seconds: 3),
+                              showCloseIcon: true,
+                            ),
+                          );
+                        } else {
+                          setState(() {
+                            _posts.add([
+                              nameController.text,
+                              surnameController.text,
+                            ]);
+                            nameController.text = "";
+                            surnameController.text = "";
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "An entry appended successfully",
+                                style: TextStyle(
+                                  color: Colors.greenAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 40,
+                                ),
+                              ),
+                              duration: Duration(seconds: 2),
+                              showCloseIcon: true,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: getMyButton(
+                      "Update",
+                      onPressed:
+                          selectedIndex == null
+                              ? null
+                              : () {
+                                setState(() {
+                                  _posts[selectedIndex!][0] =
+                                      nameController.text;
+                                  _posts[selectedIndex!][1] =
+                                      surnameController.text;
+                                });
+                              },
+                    ),
+                  ),
+                  Expanded(
+                    child: getMyButton(
+                      "Delete",
+                      onPressed:
+                          selectedIndex == null
+                              ? null
+                              : () {
+                                setState(() {
+                                  _posts.removeAt(selectedIndex!);
+                                  selectedIndex = null;
+                                });
+                              },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
