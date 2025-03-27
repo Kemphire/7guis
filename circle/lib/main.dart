@@ -28,14 +28,17 @@ class MyCanvas extends StatefulWidget {
 
 class _MyCanvasState extends State<MyCanvas> {
   List<Circle> activeCircles = [];
-  StackDs<List<Circle>> stackOfChanges = StackDs<List<Circle>>();
+  StackDs<List<Circle>> undoStack = StackDs<List<Circle>>();
+  // implement a redo stack, just push to redo stack every time you pop from undoStack
+  StackDs<List<Circle>> redoStack = StackDs<List<Circle>>();
 
-  bool showUndo() => !stackOfChanges.isEmpty;
+  bool showUndo() => !undoStack.isEmpty;
+  bool showRedo() => !redoStack.isEmpty;
 
   void updateStack() {
     var deepCopy = activeCircles.map((circle) => circle.copy()).toList();
-    if (stackOfChanges.isEmpty || !listEquals(stackOfChanges.peek, deepCopy)) {
-      stackOfChanges.push(deepCopy);
+    if (undoStack.isEmpty || !listEquals(undoStack.peek, deepCopy)) {
+      undoStack.push(deepCopy);
     }
   }
 
@@ -76,25 +79,58 @@ class _MyCanvasState extends State<MyCanvas> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed:
-                  showUndo()
-                      ? () {
-                        setState(() {
-                          stackOfChanges.pop();
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed:
+                        showUndo()
+                            ? () {
+                              setState(() {
+                                var lastChange = undoStack.pop();
+                                redoStack.push(
+                                  lastChange
+                                      .map((circle) => circle.copy())
+                                      .toList(),
+                                );
 
-                          if (stackOfChanges.isEmpty) {
-                            activeCircles = [];
-                          } else {
-                            activeCircles =
-                                stackOfChanges.peek
-                                    .map((c) => c.copy())
-                                    .toList();
-                          }
-                        });
-                      }
-                      : null,
-              child: Text("Undo"),
+                                if (undoStack.isEmpty) {
+                                  activeCircles = [];
+                                } else {
+                                  activeCircles =
+                                      undoStack.peek
+                                          .map((c) => c.copy())
+                                          .toList();
+                                }
+                              });
+                            }
+                            : null,
+                    child: Text("Undo"),
+                  ),
+                  ElevatedButton(
+                    onPressed:
+                        showRedo()
+                            ? () {
+                              setState(() {
+                                var lastChange = redoStack.pop();
+                                activeCircles =
+                                    lastChange
+                                        .map((circle) => circle.copy())
+                                        .toList();
+                                var currentState =
+                                    activeCircles
+                                        .map((circle) => circle.copy())
+                                        .toList();
+                                undoStack.push(currentState);
+                              });
+                            }
+                            : null,
+                    child: Text("Redo"),
+                  ),
+                ],
+              ),
             ),
             GestureDetector(
               onTapDown:
@@ -125,24 +161,26 @@ class _MyCanvasState extends State<MyCanvas> {
                                         });
                                       });
                                     },
-                                    onChangeEnd: (value) => updateStack(),
+                                    // onChangeEnd: (value) => updateStack(),
                                     min:
                                         widthOfScreen < heightOfScreen
                                             ? widthOfScreen / 50
                                             : heightOfScreen / 50,
                                     max: 150,
+                                    autofocus: true,
                                   ),
                             ),
                             showCloseIcon: true,
                           );
 
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(snackbar).closed.then((_) {
-                            setState(() {
-                              circle.color = Colors.grey;
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(snackbar).closed.then((_) {
+                              setState(() {
+                                circle.color = Colors.grey;
+                                updateStack();
+                              });
                             });
-                          });
                         },
                         child: Stack(
                           children: [
